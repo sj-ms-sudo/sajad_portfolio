@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CV } from '../data/cv';
 import type { PoiDef } from './district';
+import { isTouchUI } from '../../components/ui/joystick';
 
 /**
  * Shows an "E · Title" prompt when the player's feet are inside a POI rectangle and opens an HTML panel
@@ -18,11 +19,16 @@ export class PoiSystem {
   private readonly interactKey: Phaser.Input.Keyboard.Key;
   private readonly escKey: Phaser.Input.Keyboard.Key;
   private panel: HTMLDivElement | null = null;
+  private interactQueued = false;
+  private nearZone = false;
+  private suppressed = false;
+  private readonly markers = new Map<string, Phaser.GameObjects.Image>();
 
   constructor(
     private readonly scene: Phaser.Scene,
     pois: PoiDef[],
     private readonly player: Phaser.GameObjects.Sprite,
+    questIds?: string[],
   ) {
     this.zones = pois.map((def) => ({ def, rect: new Phaser.Geom.Rectangle(def.x, def.y, def.w, def.h) }));
 
@@ -31,6 +37,8 @@ export class PoiSystem {
       .text(0, 0, '', { fontFamily: '"Silkscreen", "Courier New", monospace',fontStyle:'bold', fontSize: '10px', color: '#8a0f6e' })
       .setOrigin(0.5, 0);
     this.prompt = scene.add.container(0, 0, [this.promptGfx, this.promptText]).setDepth(100).setVisible(false);
+
+    this.createMarkers(pois, questIds);
 
     const kb = scene.input.keyboard!;
     this.interactKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.E);
@@ -42,7 +50,26 @@ export class PoiSystem {
     return this.panel !== null;
   }
 
+  /** True while the player's feet are inside a POI rectangle (i.e. pressing interact would open something). */
+  get isNear(): boolean {
+    return this.nearZone;
+  }
+
+  /** Hide the prompt and ignore interaction (used while an NPC is in reach, so E only talks to the NPC). */
+  setSuppressed(v: boolean): void {
+    this.suppressed = v;
+  }
+
+  /** Touch equivalent of pressing E. Only counts if the player is standing in a POI on the next update. */
+  interact(): void {
+    this.interactQueued = true;
+  }
+
   update(): void {
+    // A queued tap only lives for one frame, so tapping the button away from a POI can't fire later.
+    const tapped = this.interactQueued;
+    this.interactQueued = false;
+
     if (this.panel) {
       if (Phaser.Input.Keyboard.JustDown(this.interactKey) || Phaser.Input.Keyboard.JustDown(this.escKey)) this.close();
       return;
@@ -51,15 +78,18 @@ export class PoiSystem {
     // Player origin is bottom-centre, so (x, y) is the feet position. Nudge up 2px to stay inside the rectangle.
     const px = this.player.x;
     const py = this.player.y - 2;
-    const near = this.zones.find((z) => Phaser.Geom.Rectangle.Contains(z.rect, px, py));
+    const near = this.suppressed ? undefined : this.zones.find((z) => Phaser.Geom.Rectangle.Contains(z.rect, px, py));
 
+    this.markers.forEach((m, id) => m.setVisible(id !== near?.def.id)); // hide marker while the prompt is showing
+
+    this.nearZone = !!near;
     if (!near) {
       this.prompt.setVisible(false);
       return;
     }
-    this.setPrompt(`Press E to view ${near.def.title}`);
+    this.setPrompt(`${isTouchUI() ? 'Tap A' : 'Press E'} to view ${near.def.title}`);
     this.prompt.setPosition(px, this.player.y - 52).setVisible(true);
-    if (Phaser.Input.Keyboard.JustDown(this.interactKey)) this.open(near.def);
+    if (Phaser.Input.Keyboard.JustDown(this.interactKey) || tapped) this.open(near.def);
   }
 
   private setPrompt(label: string): void {
@@ -95,6 +125,33 @@ export class PoiSystem {
   g.fillStyle(LIGHT, 1).fillRect(x + 6, y + BAR + 2, w - 12, innerH - 4);
 
   this.promptText.setPosition(0, y + BAR + 5);
+}
+
+  private createMarkers(pois: PoiDef[], questIds?: string[]): void {
+  const KEY = 'quest-marker';
+  if (!this.scene.textures.exists(KEY)) {
+    const DARK = 0x8a0f6e, PINK = 0xff8fe8;
+    const g = this.scene.add.graphics();
+    // bubble outline + fill (notched corners)
+    g.fillStyle(DARK, 1).fillRect(2, 0, 16, 16).fillRect(0, 2, 20, 12);
+    g.fillStyle(PINK, 1).fillRect(2, 2, 16, 12).fillRect(3, 1, 14, 14);
+    // pointer
+    g.fillStyle(DARK, 1).fillRect(6, 15, 8, 2).fillRect(7, 17, 6, 2).fillRect(8, 19, 4, 2);
+    g.fillStyle(PINK, 1).fillRect(7, 15, 6, 2).fillRect(8, 17, 4, 2).fillRect(9, 19, 2, 1);
+    // "!"
+    g.fillStyle(DARK, 1).fillRect(8, 3, 4, 6).fillRect(8, 10, 4, 3);
+    g.generateTexture(KEY, 20, 22);
+    g.destroy();
+  }
+
+  for (const def of pois) {
+    if (questIds && !questIds.includes(def.id)) continue;
+    const x = def.x + def.w / 2;
+    const y = def.y - 4;
+    const m = this.scene.add.image(x, y, KEY).setOrigin(0.5, 1).setDepth(90);
+    this.scene.tweens.add({ targets: m, y: y - 4, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    this.markers.set(def.id, m);
+  }
 }
 
   private open(poi: PoiDef): void {
@@ -172,5 +229,6 @@ export class PoiSystem {
   private close(): void {
     this.panel?.remove();
     this.panel = null;
+    this.nearZone = false;
   }
 }

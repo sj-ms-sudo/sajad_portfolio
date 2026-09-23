@@ -132,15 +132,16 @@ export class SandboxScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
-    this.player = this.createPlayer();
+       this.player = this.createPlayer();
     this.createPlayerAnims();
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.downKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-    this.upKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-    this.leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-    this.rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-    this.player.play(ANIM.idle, true);
 
+    const kb = this.input.keyboard!;
+    this.cursors = kb.createCursorKeys();
+    this.downKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+    this.upKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    this.leftKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+    this.rightKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+    this.player.play(ANIM.idle, true);
     // v0.1.2 onward: input + movement, collider against collisionLayer, camera follow.
   }
 

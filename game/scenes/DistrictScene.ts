@@ -1,7 +1,13 @@
 import Phaser from 'phaser';
 import { District, DISTRICT, preloadDistrict, type DistrictData, type ExitDef } from '../world/district';
 import { PoiSystem } from '../world/poi-system';
+import { QuickTravel } from '../world/quick-travel';
+import { Navbar } from '../../components/ui/navbar';
+import { Joystick } from '../../components/ui/joystick';
+import { NpcSystem, yDepth } from '../world/npc-system';
+import { NAV, TRAVEL } from '../data/nav';
 import { DialogueScene } from './DialogueScene';
+import { MiniMapScene } from './MiniMapScene';
 
 /** Set to true to draw the red collision rectangles and see exactly what blocks the player. */
 const DEBUG_COLLISION = false;
@@ -25,6 +31,11 @@ export class DistrictScene extends Phaser.Scene {
   private district!: District;
   private poi!: PoiSystem;
   private dialogue!: DialogueScene;
+  private minimap!: MiniMapScene;
+  private travel!: QuickTravel;
+  private navbar!: Navbar;
+  private joystick!: Joystick;
+  private npcs!: NpcSystem;
   private exitThisFrame: ExitDef | null = null;
   private lastExit = '';
 
@@ -34,6 +45,7 @@ export class DistrictScene extends Phaser.Scene {
 
   preload(): void {
     preloadDistrict(this);
+    NpcSystem.preload(this);
     const sheets: [string, string][] = [
       [PLAYER.idleKey, PLAYER.idlePath], [PLAYER.walkDownKey, PLAYER.walkDownPath], [PLAYER.walkUpKey, PLAYER.walkUpPath],
       [PLAYER.walkLeftKey, PLAYER.walkLeftPath], [PLAYER.walkRightKey, PLAYER.walkRightPath],
@@ -61,20 +73,29 @@ export class DistrictScene extends Phaser.Scene {
     };
 
     const cam = this.cameras.main;
-const applyZoom = () => cam.setZoom(Math.max(2, Math.floor(this.scale.height / 300)));
-applyZoom();
-this.scale.on(Phaser.Scale.Events.RESIZE, applyZoom);
-this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, applyZoom));
+    const applyZoom = () => cam.setZoom(Math.max(2, Math.floor(this.scale.height / 300)));
+    applyZoom();
+    this.scale.on(Phaser.Scale.Events.RESIZE, applyZoom);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, applyZoom));
     cam.startFollow(this.player, true, 0.15, 0.15);
-    
-    // cam.setZoom(2);
     cam.roundPixels = true;
 
     this.poi = new PoiSystem(this, data.pois, this.player);
     this.player.play(ANIM.idle, true);
 
+    this.scene.launch(MiniMapScene.KEY, {
+      data,
+      player: this.player,
+      playerKey: PLAYER.idleKey,
+      playerFrame: 1,
+      canOpen: () => !this.dialogue.isOpen && !this.poi.isOpen && !this.travel.isBusy,
+    });
+    this.minimap = this.scene.get(MiniMapScene.KEY) as MiniMapScene;
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scene.stop(MiniMapScene.KEY));
+
     this.scene.launch(DialogueScene.KEY);
     this.dialogue = this.scene.get(DialogueScene.KEY) as DialogueScene;
+    this.npcs = new NpcSystem(this, data, this.player, this.dialogue);
     const showSpawnDialogue = () => {
       this.dialogue.show({
         speaker: 'You',
@@ -89,9 +110,35 @@ this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scal
     };
     if (this.dialogue.isReady) showSpawnDialogue();
     else this.dialogue.events.once(Phaser.Scenes.Events.CREATE, showSpawnDialogue);
+
+    // ---- navbar + quick travel ----
+    this.travel = new QuickTravel(this, this.player, data, {
+      defaultEffect: TRAVEL.defaultEffect,
+      canTravel: () => this.canTravel(),
+      onStart: () => this.stop(), // idle pose before the effect starts
+    });
+    this.navbar = new Navbar(NAV, (item) => {
+      if (item.poi) void this.travel.to(item.poi, item.effect);
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.navbar.destroy());
+
+    // ---- touch controls (only shown on touch screens) ----
+    this.joystick = new Joystick({ onAction: () => (this.npcs.isNear ? this.npcs.interact() : this.poi.interact()) });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.joystick.destroy());
   }
 
-  update(): void {
+  /** Quick travel is refused while any overlay is open or a trip is already running. */
+  private canTravel(): boolean {
+    return !this.travel.isBusy && !this.dialogue.isOpen && !this.minimap.isOpen && !this.poi.isOpen;
+  }
+
+  update(_time: number, delta: number): void {
+    const free = this.canTravel();
+    this.navbar.setLocked(!free);
+    this.joystick.setActive(free); // hidden (and released) while a dialogue / panel / map / trip owns the screen
+    this.player.setDepth(yDepth(this.player.y)); // y-sort with the NPCs
+    this.npcs.update(delta);
+
     // Exit overlaps are reported during the physics step (just before update); react once per touch.
     const exit = this.exitThisFrame;
     this.exitThisFrame = null;
@@ -102,16 +149,38 @@ this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scal
       console.info(`[DistrictScene] reached exit "${exit.name}" -> ${exit.target} (spawn ${exit.spawn})`);
     }
 
+    // A travel effect owns the player while it runs (it may move/animate them itself).
+    if (this.travel.isBusy) return;
+
     if (this.dialogue.isOpen) {
       this.stop();
       return;
     }
 
+    if (this.minimap.isOpen) {
+      this.stop();
+      return;
+    }
+
+    const npcNear = this.npcs.handleInteraction();
+    if (this.dialogue.isOpen) {
+      this.stop(); // an NPC just started talking
+      return;
+    }
+
+    this.poi.setSuppressed(npcNear);
     this.poi.update();
     if (this.poi.isOpen) {
       this.stop();
       return;
     }
+
+    this.joystick.setActionReady(npcNear || this.poi.isNear);
+
+    // Joystick: 4-way movement (snaps to the strongest axis), same as the keyboard.
+    const jx = this.joystick.vector.x;
+    const jy = this.joystick.vector.y;
+    if (jx !== 0 || jy !== 0) return this.walkAnalog(jx, jy);
 
     const up = this.cursors.up.isDown || this.wasd.up.isDown;
     const down = this.cursors.down.isDown || this.wasd.down.isDown;
@@ -128,6 +197,25 @@ this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scal
   private walk(vx: number, vy: number, anim: string): void {
     this.player.setVelocity(vx, vy);
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim, true);
+  }
+
+  /** Joystick movement: snaps to the strongest axis so you only ever walk up / down / left / right. */
+  private walkAnalog(x: number, y: number): void {
+    const ax = Math.abs(x);
+    const ay = Math.abs(y);
+
+    // A little hysteresis so the diagonals don't flicker between horizontal and vertical.
+    const cur = this.player.anims.currentAnim?.key;
+    const wasHorizontal = cur === ANIM.walkLeft || cur === ANIM.walkRight;
+    const wasVertical = cur === ANIM.walkUp || cur === ANIM.walkDown;
+    const horizontal = wasHorizontal ? ay <= ax * 1.3 : wasVertical ? ax > ay * 1.3 : ax > ay;
+
+    if (horizontal) {
+      if (x < 0) return this.walk(-WALK_SPEED, 0, ANIM.walkLeft);
+      return this.walk(WALK_SPEED, 0, ANIM.walkRight);
+    }
+    if (y < 0) return this.walk(0, -WALK_SPEED, ANIM.walkUp);
+    return this.walk(0, WALK_SPEED, ANIM.walkDown);
   }
 
   private stop(): void {
