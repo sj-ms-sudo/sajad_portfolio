@@ -30,5 +30,5 @@ export default function GameCanvas() {
     };
   }, []);
 
-  return <div ref={containerRef} className="inline-block leading-none" />;
+  return <div ref={containerRef}  style = {{position:'fixed',inset:0}}className="inline-block leading-none" />;
 }

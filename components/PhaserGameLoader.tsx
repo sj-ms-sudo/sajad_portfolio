@@ -1,10 +1,8 @@
 "use client";
 
-
-
 import dynamic from "next/dynamic";
 
-const PhaserGame = dynamic(() => import("@/components/PhaserGame"), {
+const PhaserGame = dynamic(() => import("@/components/game/GameCanvas"), {
   ssr: false,
 });
 

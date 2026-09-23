@@ -1,0 +1,793 @@
+{
+ "world": {
+  "width": 1280,
+  "height": 960
+ },
+ "background": "general-district-bg",
+ "blockers": [
+  {
+   "name": "trees-top-left",
+   "x": 0,
+   "y": 0,
+   "w": 608,
+   "h": 102
+  },
+  {
+   "name": "trees-top-right",
+   "x": 677,
+   "y": 0,
+   "w": 603,
+   "h": 102
+  },
+  {
+   "name": "forest-west",
+   "x": 0,
+   "y": 102,
+   "w": 177,
+   "h": 343
+  },
+  {
+   "name": "forest-west-south",
+   "x": 0,
+   "y": 505,
+   "w": 62,
+   "h": 363
+  },
+  {
+   "name": "forest-sw",
+   "x": 0,
+   "y": 654,
+   "w": 161,
+   "h": 212
+  },
+
+  {
+   "name": "forest-east-north",
+   "x": 1248,
+   "y": 102,
+   "w": 32,
+   "h": 325
+  },
+  {
+   "name": "forest-east-south",
+   "x": 1205,
+   "y": 499,
+   "w": 75,
+   "h": 369
+  },
+  {
+   "name": "palm-east-mid",
+   "x": 1178,
+   "y": 541,
+   "w": 37,
+   "h": 68
+  },
+  {
+   "name": "water-south-west",
+   "x": 0,
+   "y": 898,
+   "w": 608,
+   "h": 62
+  },
+  {
+   "name": "water-south-east",
+   "x": 673,
+   "y": 898,
+   "w": 607,
+   "h": 62
+  },
+  {
+   "name": "pond",
+   "x": 94,
+   "y": 542,
+   "w": 100,
+   "h": 99
+  },
+  {
+   "name": "home",
+   "x": 150,
+   "y": 126,
+   "w": 171,
+   "h": 165
+  },
+  {
+   "name": "library",
+   "x": 416,
+   "y": 134,
+   "w": 161,
+   "h": 155
+  },
+  {
+   "name": "library-dome",
+   "x": 458,
+   "y": 54,
+   "w": 86,
+   "h": 80
+  },
+  {
+   "name": "office-a",
+   "x": 707,
+   "y": 81,
+   "w": 155,
+   "h": 210
+  },
+  {
+   "name": "office-b",
+   "x": 898,
+   "y": 107,
+   "w": 157,
+   "h": 184
+  },
+  {
+   "name": "office-c",
+   "x": 1086,
+   "y": 129,
+   "w": 165,
+   "h": 163
+  },
+  {
+   "name": "training",
+   "x": 223,
+   "y": 643,
+   "w": 163,
+   "h": 163
+  },
+  {
+   "name": "cafe",
+   "x": 418,
+   "y": 625,
+   "w": 159,
+   "h": 179
+  },
+  {
+   "name": "workshop",
+   "x": 704,
+   "y": 641,
+   "w": 160,
+   "h": 163
+  },
+  {
+   "name": "post-office",
+   "x": 897,
+   "y": 643,
+   "w": 159,
+   "h": 161
+  },
+  {
+   "name": "garden-home-library",
+   "x": 321,
+   "y": 102,
+   "w": 94,
+   "h": 190
+  },
+  {
+   "name": "plants-office-ab",
+   "x": 863,
+   "y": 150,
+   "w": 34,
+   "h": 139
+  },
+  {
+   "name": "plants-office-bc",
+   "x": 1056,
+   "y": 139,
+   "w": 29,
+   "h": 150
+  },
+
+  {
+   "name": "flowers-between-training-cafe",
+   "x": 388,
+   "y": 664,
+   "w": 30,
+   "h": 102
+  },
+
+  {
+   "name": "plants-workshop-post",
+   "x": 864,
+   "y": 648,
+   "w": 33,
+   "h": 123
+  },
+
+  {
+   "name": "lamp-1",
+   "x": 584,
+   "y": 141,
+   "w": 16,
+   "h": 17
+  },
+  {
+   "name": "lamp-2",
+   "x": 584,
+   "y": 274,
+   "w": 16,
+   "h": 17
+  },
+  {
+   "name": "lamp-3",
+   "x": 679,
+   "y": 141,
+   "w": 17,
+   "h": 17
+  },
+  {
+   "name": "lamp-4",
+   "x": 679,
+   "y": 272,
+   "w": 17,
+   "h": 17
+  },
+  {
+   "name": "lamp-plaza-nw",
+   "x": 456,
+   "y": 388,
+   "w": 16,
+   "h": 17
+  },
+  {
+   "name": "lamp-plaza-ne",
+   "x": 808,
+   "y": 399,
+   "w": 17,
+   "h": 17
+  },
+  {
+   "name": "lamp-plaza-sw",
+   "x": 456,
+   "y": 598,
+   "w": 17,
+   "h": 17
+  },
+  {
+   "name": "lamp-plaza-se",
+   "x": 808,
+   "y": 598,
+   "w": 17,
+   "h": 17
+  },
+  {
+   "name": "lamp-workshop",
+   "x": 681,
+   "y": 780,
+   "w": 15,
+   "h": 18
+  },
+  {
+   "name": "lamp-home",
+   "x": 167,
+   "y": 281,
+   "w": 15,
+   "h": 36
+  },
+  {
+   "name": "lantern-home",
+   "x": 137,
+   "y": 262,
+   "w": 13,
+   "h": 18
+  },
+
+
+
+  {
+   "name": "chalkboard-cafe-1",
+   "x": 454,
+   "y": 793,
+   "w": 19,
+   "h": 26
+  },
+  {
+   "name": "chalkboard-cafe-2",
+   "x": 516,
+   "y": 793,
+   "w": 21,
+   "h": 26
+  },
+
+
+
+  {
+   "name": "props-workshop",
+   "x": 705,
+   "y": 788,
+   "w": 58,
+   "h": 25
+  },
+  {
+   "name": "bikes-cafe",
+   "x": 383,
+   "y": 795,
+   "w": 62,
+   "h": 24
+  },
+  {
+   "name": "props-training",
+   "x": 225,
+   "y": 796,
+   "w": 30,
+   "h": 22
+  },
+  {
+   "name": "scooter-1",
+   "x": 895,
+   "y": 801,
+   "w": 30,
+   "h": 19
+  },
+  {
+   "name": "scooter-2",
+   "x": 990,
+   "y": 801,
+   "w": 34,
+   "h": 19
+  },
+  {
+   "name": "mailbox",
+   "x": 1058,
+   "y": 771,
+   "w": 24,
+   "h": 44
+  },
+  {
+   "name": "flag",
+   "x": 1087,
+   "y": 788,
+   "w": 8,
+   "h": 25
+  },
+  {
+   "name": "fountain",
+   "x": 598,
+   "y": 429,
+   "w": 86,
+   "h": 84
+  },
+  {
+   "name": "bench-fountain-w",
+   "x": 576,
+   "y": 455,
+   "w": 19,
+   "h": 38
+  },
+  {
+   "name": "bench-fountain-e",
+   "x": 688,
+   "y": 455,
+   "w": 17,
+   "h": 38
+  },
+  {
+   "name": "bench-nw",
+   "x": 546,
+   "y": 386,
+   "w": 30,
+   "h": 27
+  },
+  {
+   "name": "bench-ne",
+   "x": 706,
+   "y": 386,
+   "w": 30,
+   "h": 27
+  },
+  {
+   "name": "bench-sw",
+   "x": 546,
+   "y": 548,
+   "w": 30,
+   "h": 27
+  },
+  {
+   "name": "bench-se",
+   "x": 706,
+   "y": 546,
+   "w": 30,
+   "h": 28
+  },
+  {
+   "name": "planter-nw",
+   "x": 484,
+   "y": 361,
+   "w": 25,
+   "h": 16
+  },
+  {
+   "name": "planter-ne",
+   "x": 771,
+   "y": 364,
+   "w": 27,
+   "h": 16
+  },
+  {
+   "name": "planter-sw",
+   "x": 482,
+   "y": 587,
+   "w": 27,
+   "h": 16
+  },
+  {
+   "name": "planter-se",
+   "x": 771,
+   "y": 587,
+   "w": 27,
+   "h": 16
+  },
+  {
+   "name": "fence-north-west",
+   "x": 448,
+   "y": 319,
+   "w": 165,
+   "h": 26
+  },
+  {
+   "name": "fence-north-east",
+   "x": 670,
+   "y": 319,
+   "w": 166,
+   "h": 26
+  },
+  {
+   "name": "fence-west-part1",
+   "x": 448,
+   "y": 345,
+   "w": 18,
+   "h": 110
+  },
+  {
+    "name": "fence-west-part2",
+    "x": 448,
+    "y": 500,
+    "w" :18,
+    "h" : 110
+  },
+  {
+   "name": "fence-east-part1",
+   "x": 819,
+   "y": 345,
+   "w": 16,
+   "h": 105
+  },
+  {
+    "name":"fence-east-part2",
+    "x" : 819,
+    "y" : 495,
+    "w" : 16,
+    "h" : 110
+  },
+  {
+   "name": "fence-south-west",
+   "x": 448,
+   "y": 598,
+   "w": 160,
+   "h": 42
+  },
+  {
+   "name": "fence-south-east",
+   "x": 675,
+   "y": 598,
+   "w": 168,
+   "h": 42
+  },
+  {
+   "name": "fruit-tree-west",
+   "x": 313,
+   "y": 325,
+   "w": 71,
+   "h": 99
+  },
+  {
+   "name": "orange-tree-west",
+   "x": 107,
+   "y": 300,
+   "w": 70,
+   "h": 70
+  },
+  {
+   "name": "flowerbed-1",
+   "x": 161,
+   "y": 362,
+   "w": 30,
+   "h": 21
+  },
+  {
+   "name": "flowerbed-2",
+   "x": 287,
+   "y": 394,
+   "w": 26,
+   "h": 21
+  },
+  {
+   "name": "bush-1",
+   "x": 388,
+   "y": 357,
+   "w": 28,
+   "h": 20
+  },
+  {
+   "name": "bush-2",
+   "x": 356,
+   "y": 394,
+   "w": 25,
+   "h": 24
+  },
+  {
+   "name": "fingerpost",
+   "x": 197,
+   "y": 407,
+   "w": 24,
+   "h": 38
+  },
+  {
+   "name": "palm-sw",
+   "x": 244,
+   "y": 530,
+   "w": 26,
+   "h": 50
+  },
+  {
+   "name": "bike-road",
+   "x": 351,
+   "y": 500,
+   "w": 41,
+   "h": 15
+  },
+  {
+   "name": "stalls-west",
+   "x": 383,
+   "y": 504,
+   "w": 62,
+   "h": 47
+  },
+
+  {
+   "name": "bush-3",
+   "x": 323,
+   "y": 550,
+   "w": 25,
+   "h": 25
+  },
+  {
+   "name": "bush-4",
+   "x": 356,
+   "y": 590,
+   "w": 28,
+   "h": 21
+  },
+  {
+   "name": "stalls-east",
+   "x": 831,
+   "y": 499,
+   "w": 95,
+   "h": 49
+  },
+  {
+   "name": "tree-yellow-fruit",
+   "x": 953,
+   "y": 541,
+   "w": 48,
+   "h": 65
+  },
+  {
+   "name": "tree-big",
+   "x": 1087,
+   "y": 536,
+   "w": 37,
+   "h": 73
+  },
+  {
+   "name": "bench-park-1",
+   "x": 928,
+   "y": 544,
+   "w": 28,
+   "h": 32
+  },
+  {
+   "name": "bench-park-2",
+   "x": 1023,
+   "y": 544,
+   "w": 34,
+   "h": 32
+  },
+  {
+   "name": "bench-park-3",
+   "x": 1155,
+   "y": 544,
+   "w": 29,
+   "h": 32
+  },
+
+  {
+   "name": "tree-post-office",
+   "x": 1053,
+   "y": 696,
+   "w": 45,
+   "h": 62
+  },
+  {
+   "name": "tree-orange-east",
+   "x": 1144,
+   "y": 670,
+   "w": 47,
+   "h": 68
+  },
+  {
+   "name": "notice-board",
+   "x": 930,
+   "y": 380,
+   "w": 93,
+   "h": 35
+  },
+
+  {
+   "name": "palm-notice-w",
+   "x": 835,
+   "y": 391,
+   "w": 30,
+   "h": 38
+  },
+  {
+   "name": "palm-notice-e1",
+   "x": 1130,
+   "y": 386,
+   "w": 32,
+   "h": 38
+  },
+  {
+   "name": "palm-notice-e2",
+   "x": 1210,
+   "y": 354,
+   "w": 37,
+   "h": 54
+  }
+ ],
+ "pois": [
+  {
+   "id": "about-me",
+   "title": "About Me",
+   "category": "about",
+   "x": 193,
+   "y": 289,
+   "w": 94,
+   "h": 30
+  },
+  {
+   "id": "education",
+   "title": "Education",
+   "category": "education",
+   "x": 448,
+   "y": 289,
+   "w": 96,
+   "h": 30
+  },
+  {
+   "id": "job-1",
+   "title": "Psyra",
+   "category": "experience",
+   "x": 735,
+   "y": 289,
+   "w": 96,
+   "h": 30
+  },
+  {
+   "id": "job-2",
+   "title": "Private Clients",
+   "category": "experience",
+   "x": 928,
+   "y": 289,
+   "w": 96,
+   "h": 30
+  },
+  {
+   "id": "job-3",
+   "title": "Leading Interns",
+   "category": "experience",
+   "x": 1120,
+   "y": 289,
+   "w": 96,
+   "h": 30
+  },
+  {
+   "id": "skills",
+   "title": "Skills Board",
+   "category": "skills",
+   "x": 928,
+   "y": 416,
+   "w": 96,
+   "h": 32
+  },
+  {
+   "id": "cv-download",
+   "title": "Full CV",
+   "category": "cv",
+   "x": 576,
+   "y": 527,
+   "w": 129,
+   "h": 17
+  },
+  {
+   "id": "certs",
+   "title": "Certifications",
+   "category": "certifications",
+   "x": 255,
+   "y": 801,
+   "w": 96,
+   "h": 30
+  },
+  {
+   "id": "sharpening",
+   "title": "Currently Sharpening",
+   "category": "learning",
+   "x": 448,
+   "y": 801,
+   "w": 96,
+   "h": 30
+  },
+  {
+   "id": "projects",
+   "title": "Projects",
+   "category": "projects",
+   "x": 735,
+   "y": 801,
+   "w": 96,
+   "h": 30
+  },
+  {
+   "id": "contact",
+   "title": "Contact",
+   "category": "contact",
+   "x": 928,
+   "y": 801,
+   "w": 96,
+   "h": 30
+  }
+ ],
+ "exits": [
+  {
+   "name": "to-full-stack",
+   "target": "full-stack",
+   "spawn": "from-general-south",
+   "x": 611,
+   "y": 0,
+   "w": 62,
+   "h": 13
+  },
+  {
+   "name": "to-backend",
+   "target": "backend",
+   "spawn": "from-general-east",
+   "x": 0,
+   "y": 451,
+   "w": 13,
+   "h": 54
+  },
+  {
+   "name": "to-southern-wetlands",
+   "target": "southern-wetlands",
+   "spawn": "from-general-west",
+   "x": 1267,
+   "y": 451,
+   "w": 13,
+   "h": 54
+  }
+ ],
+ "spawns": {
+  "start": {
+   "x": 643,
+   "y": 584
+  },
+  "from-north": {
+   "x": 643,
+   "y": 43
+  },
+  "from-west": {
+   "x": 43,
+   "y": 478
+  },
+  "from-east": {
+   "x": 1237,
+   "y": 478
+  }
+ }
+}
