@@ -8,6 +8,7 @@ import { NpcSystem, yDepth } from '../world/npc-system';
 import { NAV, TRAVEL } from '../data/nav';
 import { DialogueScene } from './DialogueScene';
 import { MiniMapScene } from './MiniMapScene';
+import { BOOT } from '../boot-events';
 
 /** Set to true to draw the red collision rectangles and see exactly what blocks the player. */
 const DEBUG_COLLISION = false;
@@ -44,6 +45,7 @@ export class DistrictScene extends Phaser.Scene {
   }
 
   preload(): void {
+    this.trackLoadProgress(); // must come first so it sees every file that gets queued below
     preloadDistrict(this);
     NpcSystem.preload(this);
     const sheets: [string, string][] = [
@@ -53,6 +55,7 @@ export class DistrictScene extends Phaser.Scene {
     for (const [key, path] of sheets) this.load.spritesheet(key, path, { frameWidth: PLAYER.frameWidth, frameHeight: PLAYER.frameHeight });
     this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, (file: Phaser.Loader.File) => {
       console.error(`[DistrictScene] load failure: ${file.key} -> ${file.url}`);
+      this.game.events.emit(BOOT.error, file.key);
     });
   }
 
@@ -125,6 +128,39 @@ export class DistrictScene extends Phaser.Scene {
     // ---- touch controls (only shown on touch screens) ----
     this.joystick = new Joystick({ onAction: () => (this.npcs.isNear ? this.npcs.interact() : this.poi.interact()) });
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.joystick.destroy());
+
+    this.game.events.emit(BOOT.ready); // tells the React loading screen to fade out
+  }
+
+  /**
+   * Feeds the DOM loading bar (components/game/LoadingScreen). The big map counts for more than the
+   * small sprites, so the bar moves with the real download instead of jumping when the map lands.
+   */
+  private trackLoadProgress(): void {
+    const weights = new Map<string, number>();
+    const done = new Map<string, number>();
+    const idOf = (key: string, type: string) => `${type}:${key}`;
+    const emit = () => {
+      let total = 0;
+      let sum = 0;
+      weights.forEach((w, id) => {
+        total += w;
+        sum += w * (done.get(id) ?? 0);
+      });
+      this.game.events.emit(BOOT.progress, total ? sum / total : 0);
+    };
+
+    this.load.on(Phaser.Loader.Events.ADD, (key: string, type: string) => {
+      weights.set(idOf(key, type), key === DISTRICT.bgKey ? 6 : 1);
+    });
+    this.load.on(Phaser.Loader.Events.FILE_PROGRESS, (file: Phaser.Loader.File, pct: number) => {
+      done.set(idOf(file.key, file.type), pct);
+      emit();
+    });
+    this.load.on(Phaser.Loader.Events.FILE_COMPLETE, (key: string, type: string) => {
+      done.set(idOf(key, type), 1);
+      emit();
+    });
   }
 
   /** Quick travel is refused while any overlay is open or a trip is already running. */

@@ -1,12 +1,7 @@
+import { redirect } from "next/navigation";
+import { SITE } from "@/lib/site";
 
-
-import PhaserGameLoader from "@/components/PhaserGameLoader";
-
+// "/" has no content of its own: send everyone to the game.
 export default function Home() {
-  return (
-    <main>
-      <h1>Sajad City</h1>
-      <PhaserGameLoader />
-    </main>
-  );
+  redirect(SITE.homePath);
 }

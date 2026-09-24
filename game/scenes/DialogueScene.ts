@@ -43,6 +43,10 @@ export class DialogueScene extends Phaser.Scene {
   private tapZone!: Phaser.GameObjects.Zone;
   private enterKey!: Phaser.Input.Keyboard.Key;
 
+  private skipHint!: Phaser.GameObjects.Text;
+  private escKey!: Phaser.Input.Keyboard.Key;
+  private isMobile = false;
+
   private pages: string[] = [];
   private pageIndex = 0;
   private wrappedCurrent = '';
@@ -110,6 +114,19 @@ this.root.add(this.bodyText);
       .setVisible(false);
     this.root.add(this.continueIndicator);
 
+    this.isMobile = !this.sys.game.device.os.desktop;
+    this.skipHint = this.add
+      .text(0, 0, this.isMobile ? 'SKIP >>' : 'ESC or tap to skip', {
+        fontFamily: '"Courier New", monospace',
+        fontSize: '12px',
+        fontStyle: this.isMobile ? 'bold' : 'normal',
+        color: this.isMobile ? '#d85848' : '#8a8a94',
+        padding: { x: this.isMobile ? 10 : 0, y: this.isMobile ? 8 : 0 }, // bigger tap area on phones
+      })
+      .setOrigin(0, 0.5);
+    this.root.add(this.skipHint);
+    if (this.isMobile) this.skipHint.on('pointerdown', () => this.skipAll());
+
     this.tapZone = this.add
       .zone(0, 0, this.scale.width, this.scale.height)
       .setOrigin(0, 0)
@@ -118,6 +135,7 @@ this.root.add(this.bodyText);
     this.tapZone.on('pointerdown', () => this.advance());
 
     this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+    this.escKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
     this.root.setVisible(false);
     this.layout();
@@ -133,6 +151,7 @@ this.root.add(this.bodyText);
 
   update(): void {
     if (!this.open) return;
+    if (Phaser.Input.Keyboard.JustDown(this.escKey)) { this.skipAll(); return; }
     if (Phaser.Input.Keyboard.JustDown(this.enterKey)) this.advance();
   }
 
@@ -159,6 +178,7 @@ this.root.add(this.bodyText);
     this.root.setVisible(true);
     this.root.setAlpha(1);
     this.open = true;
+    if (this.isMobile) this.skipHint.disableInteractive();
     this.openPage(0);
   }
 
@@ -211,6 +231,9 @@ this.root.add(this.bodyText);
     this.bodyText.setStyle({ wordWrap: { width: Math.max(20, textW), useAdvancedWrap: true } });
     this.bodyText.setPosition(boxX + this.textPad, boxY + this.textPad - 2);
 
+    this.skipHint.setFontSize(compact ? 10 : 12);
+    this.skipHint.setPosition(boxX + this.textPad - (this.isMobile ? 10 : 0), boxY + this.boxH - 16);
+
     // Portrait stands on top of the box, right side.
     if (this.portrait.visible) {
     const s = this.portraitSize / Math.max(this.portrait.width, this.portrait.height);
@@ -223,6 +246,11 @@ this.root.add(this.bodyText);
     if (this.continueIndicator.visible) this.startIndicator();
 
     this.tapZone.setPosition(0, 0).setSize(w, h, true);
+  }
+
+  private skipAll(): void {
+    if (!this.open) return;
+    this.close();
   }
 
   private startIndicator(): void {
