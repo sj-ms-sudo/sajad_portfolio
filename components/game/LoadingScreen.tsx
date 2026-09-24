@@ -53,7 +53,7 @@ export default function LoadingScreen({ progress, label = 'Loading', hidden = fa
 
         {/* body */}
         <div style={{ margin: '0 4px 4px', padding: '22px 20px 20px', background: LIGHT, border: `3px solid ${DARK}` }}>
-          <div style={{ color: DARK, fontSize: 32, fontWeight: 700, lineHeight: 1, letterSpacing: 1 }}>SAJAD CITY</div>
+          <div style={{ color: DARK, fontSize: 32, fontWeight: 700, lineHeight: 1, letterSpacing: 1 }}>SAJAD's PORTFOLIO</div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 0 8px', color: error ? RED : '#383840', fontSize: 16, textTransform: 'uppercase' }}>
             <span>{error ? 'Failed to load. Refresh the page.' : `${label}…`}</span>
