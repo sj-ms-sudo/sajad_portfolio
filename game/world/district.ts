@@ -18,7 +18,7 @@ export const DISTRICT = {
   dataKey: 'general-district-data',
   dataPath: '/maps/general-district.zones.json',
   bgKey: 'general-district-bg',
-  bgPath: '/maps/general-district-bg.png',
+  bgPath: '/maps/general-district-bg.webp',
 } as const;
 
 export function preloadDistrict(scene: Phaser.Scene): void {

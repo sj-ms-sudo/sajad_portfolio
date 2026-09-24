@@ -34,8 +34,15 @@ export class PoiSystem {
 
     this.promptGfx = scene.add.graphics();
     this.promptText = scene.add
-      .text(0, 0, '', { fontFamily: '"Silkscreen", "Courier New", monospace',fontStyle:'bold', fontSize: '10px', color: '#8a0f6e' })
+      .text(0, 0, '', {
+        fontFamily: '"Silkscreen", "Courier New", monospace',
+        fontStyle: 'bold',
+        fontSize: '12px',
+        color: '#8a0f6e',
+        resolution: 4, // draws the text at 4x, so scaling doesn't blur it
+      })
       .setOrigin(0.5, 0);
+    this.promptText.texture.setFilter(Phaser.Textures.FilterMode.LINEAR); 
     this.prompt = scene.add.container(0, 0, [this.promptGfx, this.promptText]).setDepth(100).setVisible(false);
 
     this.createMarkers(pois, questIds);
@@ -162,6 +169,8 @@ export class PoiSystem {
   const DARK = '#383840';
   const RED = '#d85848';
   const FILL = '#f8f8f8';
+
+  const BODY = 'ui-rounded, "Nunito", "Segoe UI", system-ui, sans-serif';
 
   // Tap/click anywhere outside the card closes it.
   const backdrop = document.createElement('div');
