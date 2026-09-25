@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import GameMount from "@/components/game/GameMount";
 
-// Dev-only page: keep it out of search results.
+// This is a dev only page , only used to test
 export const metadata: Metadata = {
   title: "Sandbox",
   robots: { index: false, follow: false },

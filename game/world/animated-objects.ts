@@ -13,6 +13,7 @@ export const ANIMATED_OBJECTS: AnimatedObjectDef[] = [
 
     anim: {
     frames: [0,1,2,3,4,5],
+    frameRate:6,
     frameDuration: 175, // 1 second per frame
     repeat: -1,
     },

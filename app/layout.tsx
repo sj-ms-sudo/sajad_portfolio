@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   authors: [{ name: SITE.author, url: SITE.github }],
   creator: SITE.author,
   robots: { index: true, follow: true },
-  // og:image / twitter:image come from app/opengraph-image.jpg and app/twitter-image.jpg automatically
+
   openGraph: {
     type: "website",
     siteName: SITE.name,
