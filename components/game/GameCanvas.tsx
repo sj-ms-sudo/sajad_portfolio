@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import LoadingScreen from './LoadingScreen';
 import { BOOT } from '@/game/boot-events';
 
-/** Silkscreen comes from a Google Fonts @import, so make sure it is really there before Phaser draws any text. */
+// Waiting for silkscreen fonts 
 async function waitForFont(): Promise<void> {
   if (typeof document === 'undefined' || !document.fonts) return;
   try {
@@ -13,7 +13,7 @@ async function waitForFont(): Promise<void> {
       new Promise((resolve) => setTimeout(resolve, 3000)), // never block the game on a slow font
     ]);
   } catch {
-    /* fall back to the system font */
+    // Uses default font if silkscreen not loaded
   }
 }
 
@@ -70,7 +70,7 @@ export default function GameCanvas() {
     };
   }, []);
 
-  // remove the overlay from the DOM once its fade-out has finished
+
   useEffect(() => {
     if (!ready) return;
     const t = setTimeout(() => setGone(true), 600);
