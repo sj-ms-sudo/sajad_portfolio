@@ -2,14 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE } from "@/lib/site";
 
-// Shown by Next.js for any URL that doesn't match a route (and whenever you call notFound()).
-// Next sends the real 404 status code automatically; noindex keeps it out of search results.
 export const metadata: Metadata = {
   title: "Page not found",
   robots: { index: false, follow: false },
 };
 
-// Silkscreen is only crisp at 8 / 16 / 24 / 72px etc., so stick to those text sizes here.
+
 const FONT = '"Silkscreen", "Courier New", monospace';
 
 export default function NotFound() {
