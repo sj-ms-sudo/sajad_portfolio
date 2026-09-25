@@ -5,6 +5,8 @@ import { QuickTravel } from '../world/quick-travel';
 import { Navbar } from '../../components/ui/navbar';
 import { Joystick } from '../../components/ui/joystick';
 import { NpcSystem, yDepth } from '../world/npc-system';
+import { AnimatedObjectSystem } from '../world/animated-object-system';
+import { ANIMATED_OBJECTS } from '../world/animated-objects';
 import { NAV, TRAVEL } from '../data/nav';
 import { DialogueScene } from './DialogueScene';
 import { MiniMapScene } from './MiniMapScene';
@@ -39,6 +41,8 @@ export class DistrictScene extends Phaser.Scene {
   private npcs!: NpcSystem;
   private exitThisFrame: ExitDef | null = null;
   private lastExit = '';
+  private animatedObjects!: AnimatedObjectSystem;
+
 
   constructor() {
     super('DistrictScene');
@@ -48,6 +52,10 @@ export class DistrictScene extends Phaser.Scene {
     this.trackLoadProgress(); // must come first so it sees every file that gets queued below
     preloadDistrict(this);
     NpcSystem.preload(this);
+    AnimatedObjectSystem.preload(
+      this,
+      ANIMATED_OBJECTS,
+    );
     const sheets: [string, string][] = [
       [PLAYER.idleKey, PLAYER.idlePath], [PLAYER.walkDownKey, PLAYER.walkDownPath], [PLAYER.walkUpKey, PLAYER.walkUpPath],
       [PLAYER.walkLeftKey, PLAYER.walkLeftPath], [PLAYER.walkRightKey, PLAYER.walkRightPath],
@@ -130,6 +138,12 @@ export class DistrictScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.joystick.destroy());
 
     this.game.events.emit(BOOT.ready); // tells the React loading screen to fade out
+
+    this.animatedObjects = new AnimatedObjectSystem(
+      this,
+      data,
+      ANIMATED_OBJECTS,
+    );
   }
 
   /**
@@ -212,6 +226,8 @@ export class DistrictScene extends Phaser.Scene {
     }
 
     this.joystick.setActionReady(npcNear || this.poi.isNear);
+
+    this.animatedObjects?.update();
 
     // Joystick: 4-way movement (snaps to the strongest axis), same as the keyboard.
     const jx = this.joystick.vector.x;
