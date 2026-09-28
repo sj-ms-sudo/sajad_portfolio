@@ -126,16 +126,17 @@ export class ThoughtBubble extends Phaser.GameObjects.Container {
     });
 
     this.advanceTimer?.remove();
-    this.advanceTimer = this.scene.time.delayedCall(this.msPerMessage, () => this.next());
+    this.advanceTimer = this.scene.time.delayedCall(this.msPerMessage, () => this.advance());
   }
 
-  private next(): void {
-    if (this.index < this.messages.length - 1) {
-      this.showMessage(this.index + 1);
-    } else {
-      this.finish();
-    }
+  private advance(): void {
+  if (this.index < this.messages.length - 1) {
+    this.showMessage(this.index + 1);
+  } else {
+    this.finish();
   }
+}
+
 
   private redraw(): void {
     const w = Math.max(40, this.label.width + PADDING_X * 2);
