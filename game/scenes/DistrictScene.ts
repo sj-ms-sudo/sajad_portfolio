@@ -11,6 +11,7 @@ import { NAV, TRAVEL } from '../data/nav';
 import { DialogueScene } from './DialogueScene';
 import { MiniMapScene } from './MiniMapScene';
 import { BOOT } from '../boot-events';
+import { ThoughtBubble } from '../world/ThoughtBubble';
 
 /** Set to true to draw the red collision rectangles and see exactly what blocks the player. */
 const DEBUG_COLLISION = false;
@@ -42,6 +43,8 @@ export class DistrictScene extends Phaser.Scene {
   private exitThisFrame: ExitDef | null = null;
   private lastExit = '';
   private animatedObjects!: AnimatedObjectSystem;
+  private thought!: ThoughtBubble;
+  private thoughtMovedOnce = false;
 
 
   constructor() {
@@ -107,20 +110,19 @@ export class DistrictScene extends Phaser.Scene {
     this.scene.launch(DialogueScene.KEY);
     this.dialogue = this.scene.get(DialogueScene.KEY) as DialogueScene;
     this.npcs = new NpcSystem(this, data, this.player, this.dialogue);
-    const showSpawnDialogue = () => {
-      this.dialogue.show({
-        speaker: 'You',
-        portraitKey: PLAYER.idleKey,
-        portraitFrame: 0,
-        pages: [
-          'Hey, you made it.',
-          "I'm Sajad. I write code, build things, break things, and occasionally wonder why something worked five minutes ago.",
-          'Welcome to my city.',
-        ],
-      });
-    };
-    if (this.dialogue.isReady) showSpawnDialogue();
-    else this.dialogue.events.once(Phaser.Scenes.Events.CREATE, showSpawnDialogue);
+
+    this.thought = new ThoughtBubble(this);
+    this.thought.start({
+      messages: [
+        'HEY, YOU MADE IT.',
+        "WAIT... THIS ISN'T A NORMAL PORTFOLIO.",
+        'YOU CAN WALK AROUND.',
+        'TRY IT.',
+        'USE WASD KEYS OR ARROWS KEYS TO WALK AROUND',
+        'FOR MOBILE USE THE JOYSTICK',
+      ],
+      msPerMessage: 1800,
+    });
 
     // ---- navbar + quick travel ----
     this.travel = new QuickTravel(this, this.player, data, {
@@ -187,6 +189,7 @@ export class DistrictScene extends Phaser.Scene {
     this.navbar.setLocked(!free);
     this.joystick.setActive(free); // hidden (and released) while a dialogue / panel / map / trip owns the screen
     this.player.setDepth(yDepth(this.player.y)); // y-sort with the NPCs
+    this.thought.followTarget(this.player.x, this.player.y);
     this.npcs.update(delta);
 
     // Exit overlaps are reported during the physics step (just before update); react once per touch.
@@ -247,9 +250,13 @@ export class DistrictScene extends Phaser.Scene {
   }
 
   private walk(vx: number, vy: number, anim: string): void {
-    this.player.setVelocity(vx, vy);
-    if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim, true);
+  this.player.setVelocity(vx, vy);
+  if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim, true);
+  if (!this.thoughtMovedOnce) {
+    this.thoughtMovedOnce = true;
+    this.thought.notifyPlayerMoved();
   }
+}
 
   /** Joystick movement: snaps to the strongest axis so you only ever walk up / down / left / right. */
   private walkAnalog(x: number, y: number): void {
