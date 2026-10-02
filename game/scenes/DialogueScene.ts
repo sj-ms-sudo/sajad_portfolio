@@ -194,10 +194,10 @@ this.root.add(this.bodyText);
   private layout(): void {
     const w = this.scale.width;
     const h = this.scale.height;
-    const compact = w < 600; // mobile / narrow canvas
+    const compact = w <600; // mobile / narrow canvas
 
     this.boxH = compact ? 110 : 150;
-    this.textPad = compact ? 20 : 40;
+    this.textPad = compact ? 5 : 40;
     this.portraitSize = compact ? 110 : 180;
 
     this.bodyText.setFontSize(compact ? 16 : 30);

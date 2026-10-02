@@ -2,12 +2,12 @@ import Phaser from 'phaser';
 import { District, DISTRICT, preloadDistrict, type DistrictData, type ExitDef } from '../world/district';
 import { PoiSystem } from '../world/poi-system';
 import { QuickTravel } from '../world/quick-travel';
-import { Navbar } from '../../components/ui/navbar';
 import { Joystick } from '../../components/ui/joystick';
 import { NpcSystem, yDepth } from '../world/npc-system';
 import { AnimatedObjectSystem } from '../world/animated-object-system';
 import { ANIMATED_OBJECTS } from '../world/animated-objects';
-import { NAV, TRAVEL } from '../data/nav';
+import { TRAVEL } from '../data/nav';
+import { NAVIGATION } from '../navigation-events';
 import { DialogueScene } from './DialogueScene';
 import { MiniMapScene } from './MiniMapScene';
 import { BOOT } from '../boot-events';
@@ -37,7 +37,6 @@ export class DistrictScene extends Phaser.Scene {
   private dialogue!: DialogueScene;
   private minimap!: MiniMapScene;
   private travel!: QuickTravel;
-  private navbar!: Navbar;
   private joystick!: Joystick;
   private npcs!: NpcSystem;
   private exitThisFrame: ExitDef | null = null;
@@ -130,10 +129,9 @@ export class DistrictScene extends Phaser.Scene {
       canTravel: () => this.canTravel(),
       onStart: () => this.stop(), // idle pose before the effect starts
     });
-    this.navbar = new Navbar(NAV, (item) => {
-      if (item.poi) void this.travel.to(item.poi, item.effect);
-    });
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.navbar.destroy());
+    this.game.events.on(NAVIGATION.generalTravel, this.travelToPoi, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(NAVIGATION.generalTravel, this.travelToPoi, this));
+
 
     // ---- touch controls (only shown on touch screens) ----
     this.joystick = new Joystick({ onAction: () => (this.npcs.isNear ? this.npcs.interact() : this.poi.interact()) });
@@ -184,9 +182,12 @@ export class DistrictScene extends Phaser.Scene {
     return !this.travel.isBusy && !this.dialogue.isOpen && !this.minimap.isOpen && !this.poi.isOpen;
   }
 
+  private travelToPoi(poiId: string, effect?: string): void {
+    if (this.canTravel()) void this.travel.to(poiId, effect);
+  }
+
   update(_time: number, delta: number): void {
     const free = this.canTravel();
-    this.navbar.setLocked(!free);
     this.joystick.setActive(free); // hidden (and released) while a dialogue / panel / map / trip owns the screen
     this.player.setDepth(yDepth(this.player.y)); // y-sort with the NPCs
     this.thought.followTarget(this.player.x, this.player.y);

@@ -101,39 +101,62 @@ export class PoiSystem {
 
   private setPrompt(label: string): void {
   if (this.promptText.text === label) return;
+
   this.promptText.setText(label);
 
-  const DARK = 0x8a0f6e, PINK = 0xff8fe8, LIGHT = 0xfff0fb, MID = 0xffc8f4;
-  const BAR = 14;
-  const innerW = Math.ceil(this.promptText.width) + 20;
-  const innerH = Math.ceil(this.promptText.height) + 10;
+  const DARK = 0x8a0f6e;
+  const PINK = 0xff8fe8;
+  const LIGHT = 0xfff0fb;
+  const MID = 0xffc8f4;
+
+  const mobile = isTouchUI();
+
+  const BAR = mobile ? 12 : 14;
+  const horizontalPad = mobile ? 8 : 20;
+  const verticalPad = mobile ? 8 : 10;
+
+  const innerW = Math.ceil(this.promptText.width) + horizontalPad;
+  const innerH = Math.ceil(this.promptText.height) + verticalPad;
+
   const w = innerW + 8;
   const h = BAR + innerH + 4;
+
   const x = -w / 2;
-  const y = -h; // container origin is bottom-centre of the box
+  const y = -h;
 
   const g = this.promptGfx;
   g.clear();
 
-  // outer window: notched corners for the pixel look
-  g.fillStyle(DARK, 1).fillRect(x + 2, y, w - 4, h).fillRect(x, y + 2, w, h - 4);
-  g.fillStyle(PINK, 1).fillRect(x + 2, y + 2, w - 4, h - 4);
+  // Outer window
+  g.fillStyle(DARK, 1)
+    .fillRect(x + 2, y, w - 4, h)
+    .fillRect(x, y + 2, w, h - 4);
 
-  // title-bar buttons (minimise / maximise / close)
+  // Pink frame
+  g.fillStyle(PINK, 1)
+    .fillRect(x + 2, y + 2, w - 4, h - 4);
+
+  // Title-bar buttons
   for (let i = 0; i < 3; i++) {
     const bx = x + w - 13 - i * 9;
     const by = y + 3;
-    g.fillStyle(DARK, 1).fillRect(bx, by, 7, 7);
-    g.fillStyle(MID, 1).fillRect(bx + 1, by + 1, 5, 5);
+
+    g.fillStyle(DARK, 1)
+      .fillRect(bx, by, 7, 7);
+
+    g.fillStyle(MID, 1)
+      .fillRect(bx + 1, by + 1, 5, 5);
   }
 
-  // inner panel
-  g.fillStyle(DARK, 1).fillRect(x + 4, y + BAR, w - 8, innerH);
-  g.fillStyle(LIGHT, 1).fillRect(x + 6, y + BAR + 2, w - 12, innerH - 4);
+  // Inner panel
+  g.fillStyle(DARK, 1)
+    .fillRect(x + 4, y + BAR, w - 8, innerH);
+
+  g.fillStyle(LIGHT, 1)
+    .fillRect(x + 6, y + BAR + 2, w - 12, innerH - 4);
 
   this.promptText.setPosition(0, y + BAR + 5);
 }
-
   private createMarkers(pois: PoiDef[], questIds?: string[]): void {
   const KEY = 'quest-marker';
   if (!this.scene.textures.exists(KEY)) {
