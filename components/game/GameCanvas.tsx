@@ -3,6 +3,19 @@
 import { useEffect, useRef, useState } from 'react';
 import LoadingScreen from './LoadingScreen';
 import { BOOT } from '@/game/boot-events';
+import ComponentNavbar, { type ComponentNavLink } from '@/components/frontend/lighthouse/ComponentNavbar';
+import LandscapeGate from '@/components/ui/LandscapeGate';
+import { NAV, type NavItem } from '@/game/data/nav';
+import { NAVIGATION } from '@/game/navigation-events';
+import RouteBar from '@/components/ui/RouteBar';
+
+function getGeneralLinks(items: NavItem[]): ComponentNavLink[] {
+  return items.flatMap((item) => item.children?.length
+    ? getGeneralLinks(item.children)
+    : item.poi ? [{ id: item.poi, label: item.label, effect: item.effect }] : []);
+}
+
+const GENERAL_LINKS = getGeneralLinks(NAV);
 
 // Waiting for silkscreen fonts 
 async function waitForFont(): Promise<void> {
@@ -81,6 +94,9 @@ export default function GameCanvas() {
     <>
       <div ref={containerRef} style={{ position: 'fixed', inset: 0 }} className="inline-block leading-none" />
       {!gone && <LoadingScreen progress={progress} label={ready ? 'Ready' : label} hidden={ready} error={failed} />}
+      {ready && <ComponentNavbar sectionLabel="GENERAL" items={GENERAL_LINKS} onSelect={(id, effect) => gameRef.current?.events.emit(NAVIGATION.generalTravel, id, effect)} />}
+      <LandscapeGate />
+      <RouteBar active="general" />
     </>
   );
 }

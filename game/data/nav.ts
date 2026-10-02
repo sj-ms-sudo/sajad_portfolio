@@ -45,12 +45,7 @@ export const TRAVEL = {
 export const NAV: NavItem[] = [
   { label: 'About', poi: 'about-me' },
   {
-    label: 'Experience',
-    children: [
-      { label: 'Psyra', poi: 'job-1' },
-      { label: 'Client Work', poi: 'job-2' },
-      { label: 'Interns & Delivery', poi: 'job-3' },
-    ],
+    label: 'Experience', poi:'job-1',
   },
   { label: 'Projects', poi: 'projects' },
   { label: 'Skills', poi: 'skills' },
@@ -59,7 +54,7 @@ export const NAV: NavItem[] = [
     children: [
       { label: 'Education', poi: 'education' },
       { label: 'Certifications', poi: 'certs' },
-      { label: 'Currently Sharpening', poi: 'sharpening' },
+      // { label: 'Currently Sharpening', poi: 'sharpening' },
     ],
   },
   { label: 'Contact', poi: 'contact' },

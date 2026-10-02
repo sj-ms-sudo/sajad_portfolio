@@ -26,10 +26,7 @@ export function preloadDistrict(scene: Phaser.Scene): void {
   scene.load.json(DISTRICT.dataKey, DISTRICT.dataPath);
 }
 
-/**
- * A painted district: one background image + invisible collision rectangles + exits.
- * Build it BEFORE the player (it sets world/camera bounds), then call attachPlayer().
- */
+// Build the map early
 export class District {
   readonly blockers: Phaser.Physics.Arcade.StaticGroup;
   private readonly exitZones: { zone: Phaser.GameObjects.Zone; def: ExitDef }[] = [];

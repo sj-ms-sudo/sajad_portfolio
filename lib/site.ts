@@ -8,6 +8,7 @@ export const SITE = {
   jobTitle: 'Software Engineer',
   /** Home of the game (the "/" route redirects here). */
   homePath: '/general',
+  frontendPath:'/frontend',
   /**
    * Your real domain, e.g. https://sajad.dev. Set NEXT_PUBLIC_SITE_URL in your host's env settings.
    * (Falls back to the Vercel production URL, then localhost.) Needed so og:image gets an absolute URL.
