@@ -71,22 +71,22 @@ export interface NpcDef {
 
 export const NPCS: NpcDef[] = [
   // ---------------------------------------------------------------- Kerala girl: stands in the park, looking around
-  {
-    id: 'meera',
-    name: 'Meera',
-    sheet: { key: 'npc-meera', path: '/sprites/npc_meera.png', frameWidth: 32, frameHeight: 48 },
-    anim: { type: 'directional', frames: 4, frameRate: 6, columns: 5, stand: 4 },
-    portraitFrame: 4,
-    spawn: { name: 'npc-meera', fallback: { dx: 120, dy: -30 } },
-    reach: 34,
-    motion: { type: 'look', order: ['left', 'up', 'right', 'down'], hold: 1.8, solid: { w: 14, h: 8 } },
-    pages: [
-      'Namaskaram! Welcome to Sajad City.',
-      'See those bouncing "!" bubbles? Those are quest markers. Walk up to one and {press} to open it.',
-      "Each marker is a piece of Sajad's story: his work, projects and skills.",
-      'You can chat with the rest of us too. Stand close and {press}. Every one of us has a tip!',
-    ],
-  },
+  // {
+  //   id: 'meera',
+  //   name: 'Meera',
+  //   sheet: { key: 'npc-meera', path: '/sprites/npc_meera.png', frameWidth: 32, frameHeight: 48 },
+  //   anim: { type: 'directional', frames: 4, frameRate: 6, columns: 5, stand: 4 },
+  //   portraitFrame: 4,
+  //   spawn: { name: 'npc-meera', fallback: { dx: 120, dy: -30 } },
+  //   reach: 34,
+  //   motion: { type: 'look', order: ['left', 'up', 'right', 'down'], hold: 1.8, solid: { w: 14, h: 8 } },
+  //   pages: [
+  //     'Namaskaram! Welcome to Sajad City.',
+  //     'See those bouncing "!" bubbles? Those are quest markers. Walk up to one and {press} to open it.',
+  //     "Each marker is a piece of Sajad's story: his work, projects and skills.",
+  //     'You can chat with the rest of us too. Stand close and {press}. Every one of us has a tip!',
+  //   ],
+  // },
 
   // ---------------------------------------------------------------- Orange cat: cleaning his paw
   {

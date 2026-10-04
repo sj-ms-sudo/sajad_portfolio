@@ -2,6 +2,8 @@
 import { CoastScene } from "./game/scenes/CoastScene";
 import Phaser from "phaser";
 import { LighthouseScene } from "./game/scenes/LighthouseScene";
+import { GalleryScene } from "./game/scenes/GalleryScene";
+import { DialogueScene } from "../scenes/DialogueScene";
 
 export const ZOOM = 3;
 
@@ -27,6 +29,6 @@ export function createGameConfig(parent: HTMLElement): Phaser.Types.Core.GameCon
     },
     // DialogueScene runs in parallel on top of DistrictScene as a screen-fixed UI layer
     // (its own camera stays at zoom 1, unaffected by the world camera's zoom/scroll).
-    scene: [CoastScene,LighthouseScene],
+    scene: [CoastScene,LighthouseScene,GalleryScene,DialogueScene],
   };
 }

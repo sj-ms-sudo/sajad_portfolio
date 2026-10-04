@@ -41,8 +41,19 @@ const CSS = `
 .qt-avatar:not(.qt-static):hover{opacity:1;background:#fff0fb}
 .qt-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 
+// .qt-menu: add display:none and remove the old margin-left:auto
+.qt-menu{display:none;flex-wrap:nowrap;align-items:flex-start;justify-content:flex-end;gap:${CAR.gap}px;margin:0 0 0 auto;padding:0;list-style:none;pointer-events:none;min-width:0}
+.qt-nav.qt-open .qt-menu{display:flex}
+
+// .qt-burger: always visible, pinned to the right corner when collapsed
+.qt-burger{display:block;margin-left:auto;font:inherit;font-size:18px;line-height:1;color:#8a0f6e;background:#fff0fb;border:2px solid #8a0f6e;padding:6px 10px;cursor:pointer;pointer-events:auto}
+/* when expanded, the menu's own auto margin pushes everything right, so the burger just follows it */
+.qt-nav.qt-open .qt-burger{margin-left:0}
+
 .qt-menu{display:flex;flex-wrap:nowrap;align-items:flex-start;justify-content:flex-end;gap:${CAR.gap}px;margin:0 0 0 auto;padding:0;list-style:none;pointer-events:none;min-width:0}
 .qt-item{position:relative;display:flex;align-items:center;pointer-events:auto}
+
+
 
 /* top-level item = car on top, link underneath */
 .qt-top{flex-direction:column;flex:0 1 auto;min-width:0}
@@ -73,7 +84,6 @@ const CSS = `
 
 /* phones: no room for a row of cars, so it becomes a plain burger list */
 @media (max-width:720px){
-  .qt-burger{display:block}
   .qt-avatar{margin-left:0}
   .qt-car{display:none}
   .qt-menu{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:6px 8px;background:#ff8fe8;border-bottom:3px solid #8a0f6e;max-height:calc(100vh - ${NAV_HEIGHT}px);overflow-y:auto;pointer-events:auto}
@@ -120,10 +130,10 @@ export class Navbar {
     this.burger.setAttribute('aria-label', 'Menu');
     this.burger.setAttribute('aria-expanded', 'false');
     this.burger.addEventListener('click', () => {
-      const open = !this.root.classList.contains('qt-open');
-      this.root.classList.toggle('qt-open', open);
-      this.burger.setAttribute('aria-expanded', String(open));
-    });
+  if (this.locked) return;
+  const open = !this.root.classList.contains('qt-open');
+  this.setOpen(open);
+});
     this.root.appendChild(this.burger);
 
     document.body.appendChild(this.root);
@@ -252,11 +262,16 @@ export class Navbar {
     this.onSelect(item);
   }
 
-  private closeMenus(): void {
-    this.root.classList.remove('qt-open');
-    this.burger?.setAttribute('aria-expanded', 'false');
-    this.root.querySelectorAll('.qt-item.open').forEach((el) => el.classList.remove('open'));
-  }
+  private setOpen(open: boolean): void {
+  this.root.classList.toggle('qt-open', open);
+  this.burger.textContent = open ? '✕' : '☰';
+  this.burger.setAttribute('aria-expanded', String(open));
+}
+
+private closeMenus(): void {
+  this.setOpen(false);
+  this.root.querySelectorAll('.qt-item.open').forEach((el) => el.classList.remove('open'));
+}
 
   private readonly onDocPointer = (e: PointerEvent): void => {
     if (!this.root.contains(e.target as Node)) this.closeMenus();

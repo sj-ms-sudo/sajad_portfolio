@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import LoadingScreen from './LoadingScreen';
 import { BOOT } from '@/game/boot-events';
 import ComponentNavbar, { type ComponentNavLink } from '@/components/frontend/lighthouse/ComponentNavbar';
@@ -8,6 +9,7 @@ import LandscapeGate from '@/components/ui/LandscapeGate';
 import { NAV, type NavItem } from '@/game/data/nav';
 import { NAVIGATION } from '@/game/navigation-events';
 import RouteBar from '@/components/ui/RouteBar';
+import { consumeSpawnParam, districtUrl } from '@/game/district-routes';
 
 function getGeneralLinks(items: NavItem[]): ComponentNavLink[] {
   return items.flatMap((item) => item.children?.length
@@ -33,6 +35,9 @@ async function waitForFont(): Promise<void> {
 export default function GameCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameRef = useRef<import('phaser').Game | null>(null);
+  const router = useRouter();
+  const routerRef = useRef(router);
+  useEffect(() => { routerRef.current = router; }, [router]);
 
   const [progress, setProgress] = useState(0.06);
   const [label, setLabel] = useState('Starting engine');
@@ -61,6 +66,14 @@ export default function GameCanvas() {
       setLabel('Loading the city');
       const game = new Phaser.Game(createGameConfig(containerRef.current));
       gameRef.current = game;
+
+      // arriving from another district (?spawn=...) and walking off the map into one
+      const spawn = consumeSpawnParam();
+      if (spawn) game.registry.set('spawn', spawn);
+      game.events.on(NAVIGATION.leaveDistrict, (target: string, to: string) => {
+        const url = districtUrl(target, to);
+        if (!cancelled && url) routerRef.current.push(url);
+      });
 
       // asset load progress (0..1) fills the rest of the bar
       game.events.on(BOOT.progress, (v: number) => {

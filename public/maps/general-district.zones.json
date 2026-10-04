@@ -761,9 +761,9 @@
    "h": 13
   },
   {
-   "name": "to-backend",
-   "target": "backend",
-   "spawn": "from-general-east",
+   "name": "to-frontend-east",
+   "target": "frontend",
+   "spawn": "from-east",
    "x": 0,
    "y": 451,
    "w": 13,

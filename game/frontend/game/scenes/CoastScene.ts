@@ -1,8 +1,14 @@
 import Phaser from "phaser";
-import { Coast,COAST,preloadCoast,type CoastData,type ExitDef } from "../../world/frontend";
+import { Coast,COAST,preloadCoast,withCoastExtras,GALLERY_DOOR,type CoastData,type ExitDef } from "../../world/frontend";
+import { isPageExit } from "../../../district-routes";
 import {BOOT} from '../../../boot-events'
 import { Joystick, isTouchUI } from "@/components/ui/joystick";
 import { LIGHTHOUSE } from "../../lighthouse-events";
+import { NAVIGATION } from "../../../navigation-events";
+import { NpcSystem, yDepth } from "../../../world/npc-system";
+import { DialogueScene } from "../../../scenes/DialogueScene";
+import type { DistrictData } from "../../../world/district";
+import { COAST_NPCS } from "../../data/coast-npcs";
 
 
 const DEBUG_COLLISION = false;
@@ -33,16 +39,24 @@ export class CoastScene extends Phaser.Scene{
     private nearDoor = false;
     private enterKeys!: Phaser.Input.Keyboard.Key[];
     private doorHint!: Phaser.GameObjects.Text;
+    private nearGallery = false;
+    private doorTarget: 'LighthouseScene' | 'GalleryScene' | null = null;
+    private galleryHint!: Phaser.GameObjects.Text;
+    private npcs!: NpcSystem;
+    private dialogue!: DialogueScene;
 
     constructor(){
         super('CoastScene');
     }
 
         init(data?: { spawn?: string }): void {
-        this.spawnName = data?.spawn ?? 'start';
+        this.spawnName = data?.spawn ?? (this.registry.get('spawn') as string | undefined) ?? 'start';
+        this.registry.remove('spawn'); // one-shot: later restarts (e.g. coming back from the lighthouse) must not reuse it
         this.locked = false;
         this.canEnter = false;
         this.nearDoor = false;
+        this.nearGallery = false;
+        this.doorTarget = null;
         this.exitThisFrame = null;
         this.lastExit = '';
     }
@@ -50,6 +64,7 @@ export class CoastScene extends Phaser.Scene{
     preload():void {
         this.trackLoadProgress();
         preloadCoast(this);
+        NpcSystem.preload(this, COAST_NPCS);
         const sheets:[string,string][]=[
             [PLAYER.idleKey, PLAYER.idlePath], [PLAYER.walkDownKey, PLAYER.walkDownPath], [PLAYER.walkUpKey, PLAYER.walkUpPath],
                   [PLAYER.walkLeftKey, PLAYER.walkLeftPath], [PLAYER.walkRightKey, PLAYER.walkRightPath],
@@ -62,7 +77,7 @@ export class CoastScene extends Phaser.Scene{
     }
 
     create():void{
-        const data = this.cache.json.get(COAST.dataKey) as CoastData;
+        const data = withCoastExtras(this.cache.json.get(COAST.dataKey) as CoastData);
         this.coast = new Coast(this,data,DEBUG_COLLISION);
         this.game.events.on(LIGHTHOUSE.travel, this.travelToBinoculars, this);
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off(LIGHTHOUSE.travel, this.travelToBinoculars, this));
@@ -89,7 +104,7 @@ export class CoastScene extends Phaser.Scene{
 
         this.player.play(ANIM.idle,true);
 
-        this.joystick = new Joystick({ onAction: () => this.tryEnter() });
+        this.joystick = new Joystick({ onAction: () => (this.npcs.isNear ? this.npcs.interact() : this.tryEnter()) });
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.joystick.destroy());
 
         // Lighthouse door
@@ -106,6 +121,22 @@ export class CoastScene extends Phaser.Scene{
 
 
         
+        // Art gallery door (the arched entrance of the big hall)
+        const gz = this.add.zone(GALLERY_DOOR.x + GALLERY_DOOR.w / 2, GALLERY_DOOR.y + GALLERY_DOOR.h / 2, GALLERY_DOOR.w, GALLERY_DOOR.h);
+        this.physics.add.existing(gz, true);
+        this.physics.add.overlap(this.player, gz, () => { this.nearGallery = true; });
+        this.galleryHint = this.add.text(GALLERY_DOOR.x + GALLERY_DOOR.w / 2, GALLERY_DOOR.y + GALLERY_DOOR.h + 6,
+            isTouchUI() ? 'TAP A · ART GALLERY' : 'PRESS E · ART GALLERY', {
+            fontFamily: '"Silkscreen","Courier New",monospace', fontSize: '8px', color: '#fff0fb',
+            backgroundColor: '#8a0f6e', padding: { x: 3, y: 2 },
+        }).setOrigin(0.5, 0).setDepth(1000).setVisible(false);
+
+        // NPCs (Gully the seagull, Finn the shark) talk through the same DialogueScene the General district uses
+        this.scene.launch(DialogueScene.KEY);
+        this.dialogue = this.scene.get(DialogueScene.KEY) as DialogueScene;
+        this.npcs = new NpcSystem(this, data as unknown as DistrictData, this.player, this.dialogue, COAST_NPCS);
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scene.stop(DialogueScene.KEY));
+
         this.game.events.emit(BOOT.ready);
     }
 
@@ -138,13 +169,22 @@ export class CoastScene extends Phaser.Scene{
     update(_time:number,delta:number):void{
         
         // this.joystick.setActive(free);
-        this.player.setDepth(this.player.y);
+        this.player.setDepth(yDepth(this.player.y)); // y-sorted together with the NPCs
+        this.npcs.update(delta);
 
-        const near = this.nearDoor;
+        // NPC talk prompt / dialogue (only while the player is free to act)
+        const npcNear = !this.locked && !this.dialogue.isOpen ? this.npcs.handleInteraction() : false;
+        if (this.dialogue.isOpen) { this.stop(); return; }
+
+        const nearLighthouse = this.nearDoor;
+        const nearGallery = this.nearGallery;
         this.nearDoor = false;
-        this.canEnter = near && !this.locked;
-        this.doorHint.setVisible(this.canEnter);
-        this.joystick.setActionReady(this.canEnter);
+        this.nearGallery = false;
+        this.doorTarget = nearGallery ? 'GalleryScene' : nearLighthouse ? 'LighthouseScene' : null;
+        this.canEnter = this.doorTarget !== null && !this.locked && !npcNear;
+        this.doorHint.setVisible(this.canEnter && this.doorTarget === 'LighthouseScene');
+        this.galleryHint.setVisible(this.canEnter && this.doorTarget === 'GalleryScene');
+        this.joystick.setActionReady(this.canEnter || npcNear);
         if (this.locked) { this.player.setVelocity(0, 0); return; }
         if (this.enterKeys.some((k) => Phaser.Input.Keyboard.JustDown(k))) this.tryEnter();
         if (this.locked) return;
@@ -154,7 +194,8 @@ export class CoastScene extends Phaser.Scene{
         if (!exit) this.lastExit='';
         else if (exit.name !== this.lastExit){
             this.lastExit = exit.name;
-            console.info(`[DistrictScene] reached exit "${exit.name}" -> ${exit.target} (spawn ${exit.spawn})`);
+            if (isPageExit(exit.name)) { this.leaveTo(exit); return; }
+            console.info(`[CoastScene] reached exit "${exit.name}" -> ${exit.target} (spawn ${exit.spawn})`);
 
         }
 
@@ -188,13 +229,26 @@ export class CoastScene extends Phaser.Scene{
 
     private tryEnter(): void {
         if (!this.canEnter || this.locked) return;
+        const target = this.doorTarget ?? 'LighthouseScene';
         this.locked = true;
         this.player.setVelocity(0, 0);
         this.player.play(ANIM.idle, true);
         this.joystick.setActive(false);
         this.cameras.main.fadeOut(250, 10, 10, 12);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
-            () => this.scene.start('LighthouseScene'));
+            () => this.scene.start(target));
+    }
+
+    /** Walking off the map into another district: fade out, then the React canvas navigates to that district's page. */
+    private leaveTo(exit: ExitDef): void {
+        if (this.locked) return;
+        this.locked = true;
+        this.player.setVelocity(0, 0);
+        this.player.play(ANIM.idle, true);
+        this.joystick.setActive(false);
+        this.cameras.main.fadeOut(250, 10, 10, 12);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+            () => this.game.events.emit(NAVIGATION.leaveDistrict, exit.target, exit.spawn));
     }
 
     private onLighthouseClosed(): void {

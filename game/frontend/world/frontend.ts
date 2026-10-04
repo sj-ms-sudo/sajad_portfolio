@@ -18,8 +18,33 @@ export const COAST = {
     dataKey:'frontend-district-data',
     dataPath:'/maps/frontend_district_zones.json',
     bgKey:'frontend-district-bg',
-    bgPath:'/maps/frontend_district_map.png',
+    bgPath:'/maps/frontend_district_map.webp',
 } as const;
+
+/**
+ * Coast zones that live in code, so they keep working even if frontend_district_zones.json is replaced.
+ * An entry in the JSON with the same exit name / spawn key wins over these.
+ */
+export const COAST_EXTRAS = {
+    exits: [] as ExitDef[],
+    spawns: {
+        'from-gallery': {x:476,y:722},  // just outside the big arched building after leaving the gallery
+        'npc-seagull': {x:560,y:760},   // Gully, on the sand east of the gallery door
+        'npc-shark': {x:535,y:915},     // centre of Finn's circle, in open water just left of the pier
+    } as Record<string,{x:number;y:number}>,
+};
+
+/** Door of the art gallery: the arched entrance of the big red-roofed hall (stand on the sand and press E). */
+export const GALLERY_DOOR: Rect = {x:448,y:676,w:54,h:22};
+
+export function withCoastExtras(data:CoastData):CoastData{
+    const known = new Set(data.exits.map((e)=>e.name));
+    return {
+        ...data,
+        exits:[...data.exits,...COAST_EXTRAS.exits.filter((e)=>!known.has(e.name))],
+        spawns:{...COAST_EXTRAS.spawns,...data.spawns},
+    };
+}
 
 export function preloadCoast(scene:Phaser.Scene):void{
     scene.load.image(COAST.bgKey,COAST.bgPath);
