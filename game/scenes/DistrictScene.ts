@@ -8,6 +8,7 @@ import { AnimatedObjectSystem } from '../world/animated-object-system';
 import { ANIMATED_OBJECTS } from '../world/animated-objects';
 import { TRAVEL } from '../data/nav';
 import { NAVIGATION } from '../navigation-events';
+import { isPageExit } from '../district-routes';
 import { DialogueScene } from './DialogueScene';
 import { MiniMapScene } from './MiniMapScene';
 import { BOOT } from '../boot-events';
@@ -44,10 +45,21 @@ export class DistrictScene extends Phaser.Scene {
   private animatedObjects!: AnimatedObjectSystem;
   private thought!: ThoughtBubble;
   private thoughtMovedOnce = false;
+  private spawnName = 'start';
+  private leaving = false;
 
 
   constructor() {
     super('DistrictScene');
+  }
+
+  /** Arriving from another district's page: the React canvas stored ?spawn=<name> in the registry (one-shot). */
+  init(): void {
+    this.spawnName = (this.registry.get('spawn') as string | undefined) ?? 'start';
+    this.registry.remove('spawn');
+    this.leaving = false;
+    this.exitThisFrame = null;
+    this.lastExit = '';
   }
 
   preload(): void {
@@ -73,7 +85,7 @@ export class DistrictScene extends Phaser.Scene {
     const data = this.cache.json.get(DISTRICT.dataKey) as DistrictData;
     this.district = new District(this, data, DEBUG_COLLISION);
 
-    const start = data.spawns.start;
+    const start = data.spawns[this.spawnName] ?? data.spawns.start;
     this.player = this.createPlayer(start.x, start.y);
     this.createPlayerAnims();
     this.district.attachPlayer(this.player, (exit) => { this.exitThisFrame = exit; });
@@ -179,7 +191,18 @@ export class DistrictScene extends Phaser.Scene {
 
   /** Quick travel is refused while any overlay is open or a trip is already running. */
   private canTravel(): boolean {
-    return !this.travel.isBusy && !this.dialogue.isOpen && !this.minimap.isOpen && !this.poi.isOpen;
+    return !this.leaving && !this.travel.isBusy && !this.dialogue.isOpen && !this.minimap.isOpen && !this.poi.isOpen;
+  }
+
+  /** Walking off the map into a district that has its own page: fade out, then React does router.push. */
+  private leaveTo(exit: ExitDef): void {
+    this.leaving = true;
+    this.stop();
+    this.joystick.setActive(false);
+    this.cameras.main.fadeOut(250, 10, 10, 12);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.game.events.emit(NAVIGATION.leaveDistrict, exit.target, exit.spawn);
+    });
   }
 
   private travelToPoi(poiId: string, effect?: string): void {
@@ -199,8 +222,14 @@ export class DistrictScene extends Phaser.Scene {
     if (!exit) this.lastExit = '';
     else if (exit.name !== this.lastExit) {
       this.lastExit = exit.name;
-      // TODO when the neighbouring districts exist: this.scene.start('<scene for exit.target>', { spawn: exit.spawn });
-      console.info(`[DistrictScene] reached exit "${exit.name}" -> ${exit.target} (spawn ${exit.spawn})`);
+      // Districts that live on their own page (see district-routes.ts): fade out and let React navigate.
+      if (isPageExit(exit.name) && !this.leaving && !this.travel.isBusy) this.leaveTo(exit);
+      else console.info(`[DistrictScene] reached exit "${exit.name}" -> ${exit.target} (spawn ${exit.spawn})`);
+    }
+
+    if (this.leaving) {
+      this.stop();
+      return;
     }
 
     // A travel effect owns the player while it runs (it may move/animate them itself).

@@ -38,8 +38,8 @@ interface Npc {
  *               const near = this.npcs.handleInteraction();    // only while the player is free to act
  */
 export class NpcSystem {
-  static preload(scene: Phaser.Scene): void {
-    for (const { sheet } of NPCS) {
+  static preload(scene: Phaser.Scene, defs: NpcDef[] = NPCS): void {
+    for (const { sheet } of defs) {
       scene.load.spritesheet(sheet.key, sheet.path, { frameWidth: sheet.frameWidth, frameHeight: sheet.frameHeight });
     }
   }
@@ -58,11 +58,12 @@ export class NpcSystem {
     data: DistrictData,
     private readonly player: Phaser.Physics.Arcade.Sprite,
     private readonly dialogue: DialogueScene,
+    defs: NpcDef[] = NPCS,
   ) {
     this.prompt = new PromptBubble(scene);
     this.interactKey = scene.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
-    for (const def of NPCS) this.spawn(def, data);
+    for (const def of defs) this.spawn(def, data);
   }
 
   /** True while the player is within reach of some NPC (decided on the last handleInteraction call). */
