@@ -4,6 +4,7 @@ import { useEffect,useRef,useState } from "react";
 import { useRouter } from "next/navigation";
 import LoadingScreen from "@/components/game/LoadingScreen";
 import {BOOT} from '@/game/boot-events';
+import { DIALOGUE } from '@/game/dialogue-events';
 import LighthouseOverlay from "@/components/frontend/lighthouse/LighthouseOverlay";
 import ComponentNavbar from "@/components/frontend/lighthouse/ComponentNavbar";
 import RouteBar from "@/components/ui/RouteBar";
@@ -48,6 +49,7 @@ export default function FrontendGameCanvas(){
     const [ready,setReady] = useState(false);
     const [failed,setFailed] = useState(false);
     const [gone,setGone] = useState(false);
+    const [dialogueOpen,setDialogueOpen] = useState(false);
     const [lhOpen,setLhOpen] = useState(false);
     const [activeShowcaseId,setActiveShowcaseId] = useState<string | undefined>();
     const [galleryOpen,setGalleryOpen] = useState(false);
@@ -74,6 +76,7 @@ export default function FrontendGameCanvas(){
             setLabel('Loading the coast');
             const game = new Phaser.Game(createGameConfig(containerRef.current));
             gameRef.current = game;
+            game.events.on(DIALOGUE.visibility,setDialogueOpen);
 
             game.events.on(BOOT.progress,(v:number)=>{
                 if (!cancelled) setProgress(0.15 +v*0.8);
@@ -147,7 +150,7 @@ export default function FrontendGameCanvas(){
             <LandscapeGate />
             {lhOpen && <LighthouseOverlay initialShowcaseId={activeShowcaseId} onClose={()=>{ setLhOpen(false); gameRef.current?.events.emit(LIGHTHOUSE.close); }}/>}
             {galleryOpen && <LighthouseOverlay items={WEBSITES} traversal="buttons" label="Art gallery" initialShowcaseId={galleryShowcaseId} onClose={()=>{ setGalleryOpen(false); gameRef.current?.events.emit(GALLERY.close); }}/>}
-            <RouteBar active="frontend"/>
+            {!dialogueOpen && <RouteBar active="frontend"/>}
         </>
     );
  }

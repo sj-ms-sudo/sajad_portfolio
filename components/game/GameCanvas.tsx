@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LoadingScreen from './LoadingScreen';
 import { BOOT } from '@/game/boot-events';
+import { DIALOGUE } from '@/game/dialogue-events';
 import ComponentNavbar, { type ComponentNavLink } from '@/components/frontend/lighthouse/ComponentNavbar';
 import LandscapeGate from '@/components/ui/LandscapeGate';
 import { NAV, type NavItem } from '@/game/data/nav';
@@ -44,6 +45,7 @@ export default function GameCanvas() {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [gone, setGone] = useState(false);
+  const [dialogueOpen, setDialogueOpen] = useState(false);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -66,6 +68,7 @@ export default function GameCanvas() {
       setLabel('Loading the city');
       const game = new Phaser.Game(createGameConfig(containerRef.current));
       gameRef.current = game;
+      game.events.on(DIALOGUE.visibility, setDialogueOpen);
 
       // arriving from another district (?spawn=...) and walking off the map into one
       const spawn = consumeSpawnParam();
@@ -109,7 +112,7 @@ export default function GameCanvas() {
       {!gone && <LoadingScreen progress={progress} label={ready ? 'Ready' : label} hidden={ready} error={failed} />}
       {ready && <ComponentNavbar sectionLabel="GENERAL" items={GENERAL_LINKS} onSelect={(id, effect) => gameRef.current?.events.emit(NAVIGATION.generalTravel, id, effect)} />}
       <LandscapeGate />
-      <RouteBar active="general" />
+      {!dialogueOpen && <RouteBar active="general" />}
     </>
   );
 }
