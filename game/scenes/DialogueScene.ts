@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { DIALOGUE } from '../dialogue-events';
 
 export interface DialogueOptions {
   /** Name shown in the little tag above the box. Omit for no name tag. */
@@ -144,6 +145,7 @@ this.root.add(this.bodyText);
       this.scale.off(Phaser.Scale.Events.RESIZE, this.layout, this);
       this.typeTimer?.remove();
       this.indicatorTween?.remove();
+      if (this.open) this.hide();
     });
 
     this.isReady = true;
@@ -178,6 +180,7 @@ this.root.add(this.bodyText);
     this.root.setVisible(true);
     this.root.setAlpha(1);
     this.open = true;
+    this.game.events.emit(DIALOGUE.visibility, true);
     if (this.isMobile) this.skipHint.disableInteractive();
     this.openPage(0);
   }
@@ -188,6 +191,7 @@ this.root.add(this.bodyText);
     this.stopIndicator();
     this.root.setVisible(false);
     this.open = false;
+    this.game.events.emit(DIALOGUE.visibility, false);
     this.tapZone.disableInteractive();
   }
 

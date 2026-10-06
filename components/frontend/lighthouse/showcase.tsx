@@ -1,5 +1,6 @@
 'use client';
 import { useState, type ReactNode } from 'react';
+import Image from 'next/image';
 
 export interface ShowcaseItem {
   id: string;
@@ -66,6 +67,27 @@ export const SHOWCASE: ShowcaseItem[] = [
       <source src="/videos/psyra-therapy-journey.mp4" type="video/mp4" />
       Your browser does not support the video tag.
     </video>
+  ),
+},
+{
+  id: 'psyra-reviews',
+  title: 'Psyra Reviews',
+  blurb: 'A testimonials section featuring Google reviews, a 4.9 out of 5 rating, five-star review cards, reviewer details, and a "See more reviews" CTA.',
+  tags: ['React', 'CSS', 'Testimonials'],
+  href: 'https://psyra.in',
+  demo: () => (
+    <Image
+      src="/videos/psyra_review.png"
+      alt="Psyra Reviews section"
+      width={900}
+      height={500}
+      style={{
+        width: '100%',
+        maxWidth: 900,
+        borderRadius: 16,
+        display: 'block',
+      }}
+    />
   ),
 },
 ];
